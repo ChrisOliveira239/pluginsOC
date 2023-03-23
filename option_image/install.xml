@@ -1,0 +1,326 @@
+<modification>
+	<name>Opção com imagem responsiva</name>
+	<code>option-image</code>
+	<version>1.0</version>
+	<author>Laon Soluções</author>
+	<link>https://laon.com.br</link>
+
+
+	<!-- SUCESSO -->
+	<file path="admin/view/template/catalog/product_form.twig">
+		<operation>
+			<search>
+			<![CDATA[
+            			<td class="text-right">{{ entry_quantity }}</td>
+			]]>
+		</search>
+			<add position="after">
+			<![CDATA[
+			    	{% if(product_option.type == 'radio')%}
+					<td class="text-center">Imagem</td>
+				{% endif %}
+			]]>
+		</add>
+		</operation>
+		<operation>
+			<search>
+			<![CDATA[
+            			 <td class="text-right"><input type="text" name="product_option[{{ option_row }}][product_option_value][{{ option_value_row }}][quantity]" value="{{ product_option_value.quantity }}" placeholder="{{ entry_quantity }}" class="form-control"/></td>
+			]]>
+		</search>
+			<add position="after">
+			<![CDATA[
+			    	{% if(product_option.type == 'radio')%}
+					<td class="text-left">
+                  				  <a href="" id="thumb-image-opt{{ option_value_row }}" data-toggle="image" class="img-thumbnail"><img src="{{ product_option_value.thumb }}" alt="" title="" data-placeholder="{{ placeholder }}" /></a>
+                   				 <input type="hidden" name="product_option[{{ option_row }}][product_option_value][{{ option_value_row }}][option_image]"  value="{{ product_option_value.option_image }}" id="input-image-opt{{ option_value_row }}" />
+                  			</td>
+				{% endif %}
+			]]>
+		</add>
+		</operation>
+		<operation error='skip'>
+			<search>
+				<![CDATA[ 
+				html += '  <td class="text-right"><input type="text" name="product_option[' + option_row + '][product_option_value][' + option_value_row + '][quantity]" value="" placeholder="{{ entry_quantity }}" class="form-control" /></td>';
+				]]>
+			</search>
+			<add position='after'>
+				<![CDATA[ 
+				var input = $('.active input[name="product_option['+option_row+'][type]"]').val();
+	  if(input == 'radio'){
+		html += '<td class="text-left"><a href="" id="thumb-image-opt' + option_value_row + '" data-toggle="image" class="img-thumbnail"><img src="{{ placeholder }}" alt="" title="" data-placeholder="{{ placeholder }}" /></a><input type="hidden" name="product_option[' + option_row + '][product_option_value][' + option_value_row + '][option_image]"  value="{{ product_option_value.option_image }}" id="input-image-opt' + option_value_row + '" /></td>';	  
+	  }
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/product/product.twig">
+		<operation error='skip'>
+			<search>
+				<![CDATA[             
+				{% if images|length > 1 and j3.settings.get(stylePrefix ~ 'AdditionalImagesStatus') %}
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				{% set opcoes = 0 %}
+				{% for option in options %}
+				{% for option_value in option.product_option_value %}
+					{% if option_value.product_option_image %}
+							{% set opcoes = opcoes + 1 %}
+					{% endif %}
+				{% endfor %}
+				{% endfor %}
+				{% if images|length > 1 or opcoes > 0 and j3.settings.get(stylePrefix ~ 'AdditionalImagesStatus') %}
+
+				]]>
+			</add>
+		</operation>
+		<operation error='skip'>
+			<search>
+				<![CDATA[ 
+				<li class="image-additional"><a class="thumbnail" href="{{ image.popup }}" title="{{ heading_title }}"> <img src="{{ image.thumb }}" loading="lazy" title="{{ heading_title }}" alt="{{ heading_title }}" /></a></li>
+				]]>
+			</search>
+			<add position='after' offset='2'>
+				<![CDATA[ 
+				{% for option in options %}
+				{% for option_value in option.product_option_value %}
+					{% if option_value.product_option_image %}
+							<li class="image-additional"><a class="thumbnail" href="{{option_value.product_option_image}}" title="{{ heading_title }}"> <img src="{{option_value.product_option_image}}" loading="lazy" title="{{ heading_title }}" alt="{{ heading_title }}" /></a></li>
+					{% endif %}
+				{% endfor %}
+				{% endfor %}
+				]]>
+			</add>
+		</operation>
+		<operation error='skip'>
+			<search>
+				<![CDATA[ 
+				<div class="swiper-wrapper">
+				]]>
+			</search>
+			<add position='after'>
+				<![CDATA[ 
+				{% set marcador = 0 %}
+				]]>
+			</add>
+		</operation>
+
+		<operation error='skip'>
+			<search>
+				<![CDATA[ 
+				<img src="{{ image.thumb }}" {% if image.thumb2x %}srcset="{{ image.thumb }} 1x, {{ image.thumb2x }} 2x"{% endif %} alt="{{ heading_title }}" title="{{ heading_title }}"/>
+				]]>
+			</search>
+			<add position='before'>
+				<![CDATA[ 
+				{% set marcador = marcador + 1 %}
+				]]>
+			</add>
+		</operation>
+		
+		<operation error='skip'>
+			<search>
+				<![CDATA[ 
+				<img src="{{ image.thumb }}" {% if image.thumb2x %}srcset="{{ image.thumb }} 1x, {{ image.thumb2x }} 2x"{% endif %} alt="{{ heading_title }}" title="{{ heading_title }}"/>
+				]]>
+			</search>
+			<add position='after' offset='2'>
+				<![CDATA[ 
+				{% for option in options %}
+					{% for option_value in option.product_option_value %}
+						{% if option_value.product_option_image %}
+							<div class="swiper-slide additional-image" data-index="{{ marcador }}" marcador={{ loop.index0 }}>
+							{% set marcador = marcador + 1 %}
+                          	<img src="{{option_value.product_option_image}}" {% if option_value.product_option_image %}srcset="{{option_value.product_option_image}} 1x, {{option_value.product_option_image}} 2x"{% endif %} alt="{{ heading_title }}" title="{{ heading_title }}"/>
+                        </div>
+						{% endif %}
+					{% endfor %}
+				{% endfor %}
+				]]>
+			</add>
+		</operation>
+		<operation error='skip'>
+			<search>
+				<![CDATA[ 
+				<img src="{{ image.image }}" {% if image.image2x %}srcset="{{ image.image }} 1x, {{ image.image2x }} 2x"{% endif %} data-largeimg="{{ image.popup }}" alt="{{ heading_title }}" title="{{ heading_title }}" width="{{ j3.settings.get('image_dimensions_thumb.width') }}" height="{{ j3.settings.get('image_dimensions_thumb.height') }}"/>
+				]]>
+			</search>
+			<add position='after' offset='2'>
+				<![CDATA[ 
+				{% for option in options %}
+					{% for option_value in option.product_option_value %}
+						{% if option_value.product_option_image %}
+							{% set gallery = gallery|merge([{src: option_value.product_option_image, thumb: option_value.product_option_image, subHtml: heading_title}]) %}
+							<div class="swiper-slide" {% if not j3.document.isPopup() and j3.settings.get(stylePrefix ~ 'GalleryStatus') %} data-gallery=".lightgallery-product-images" data-index="{{ loop.index0 }}" {% endif %}>
+							<img src="{{ option_value.product_option_image }}" {% if option_value.product_option_image %}srcset="{{ option_value.product_option_image }} 1x, {{ option_value.product_option_image }} 2x"{% endif %} data-largeimg="{{ option_value.product_option_image }}" alt="{{ heading_title }}" title="{{ heading_title }}" width="{{ j3.settings.get('image_dimensions_thumb.width') }}" height="{{ j3.settings.get('image_dimensions_thumb.height') }}"/>
+							</div>
+						{% endif %}
+					{% endfor %}
+				{% endfor %}
+				]]>
+			</add>
+		</operation>
+
+		<operation>
+			<search>
+				<![CDATA[ 
+				<input type="radio" name="option[{{ option.product_option_id }}]" value="{{ option_value.product_option_value_id }}" />
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				<input type="radio" name="option[{{ option.product_option_id }}]" value="{{ option_value.product_option_value_id }}"
+				{% if option_value.product_option_image %}
+				src = "{{option_value.product_option_image}}" marcador={{ loop.index0 }}
+				{% endif %}
+				/>
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path='admin/controller/catalog/product.php'>
+		<operation>
+			<search>
+				<![CDATA[ 
+				$product_option_value_data = array();
+				]]>
+			</search>
+			<add position='after'>
+				<![CDATA[ 
+				$this->load->model('tool/image');
+				]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[ 
+				foreach ($product_option['product_option_value'] as $product_option_value) {
+				]]>
+			</search>
+			<add position='after'>
+				<![CDATA[ 
+				if (is_file(DIR_IMAGE . $product_option_value['option_image'])) {
+					$image = $product_option_value['option_image'];
+					$thumb = $product_option_value['option_image'];
+				} else {
+					$image = '';
+					$thumb = 'no_image.png';
+				}
+				]]>
+				
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[ 
+				'weight_prefix'           => $product_option_value['weight_prefix']
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				'weight_prefix'           => $product_option_value['weight_prefix'],
+						'option_image'			=> $image,
+						'thumb'					=> $this->model_tool_image->resize($thumb, 100, 100)
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path='admin/model/catalog/product.php'>
+		<operation error='skip'>
+			<search>
+				<![CDATA[ 
+				$this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET product_option_id = '" . (int)$product_option_id . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', option_value_id = '" . (int)$product_option_value['option_value_id'] . "', sku = '" . $this->db->escape($product_option_value['sku']) . "', quantity = '" . (int)$product_option_value['quantity'] . "', subtract = '" . (int)$product_option_value['subtract'] . "', price = '" . (float)$product_option_value['price'] . "', price_prefix = '" . $this->db->escape($product_option_value['price_prefix']) . "', points = '" . (int)$product_option_value['points'] . "', points_prefix = '" . $this->db->escape($product_option_value['points_prefix']) . "', weight = '" . (float)$product_option_value['weight'] . "', weight_prefix = '" . $this->db->escape($product_option_value['weight_prefix']) . "'");
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				$this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET product_option_id = '" . (int)$product_option_id . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', option_value_id = '" . (int)$product_option_value['option_value_id'] . "', sku = '" . $this->db->escape($product_option_value['sku']) . "', quantity = '" . (int)$product_option_value['quantity'] . "', subtract = '" . (int)$product_option_value['subtract'] . "', price = '" . (float)$product_option_value['price'] . "', price_prefix = '" . $this->db->escape($product_option_value['price_prefix']) . "', points = '" . (int)$product_option_value['points'] . "', points_prefix = '" . $this->db->escape($product_option_value['points_prefix']) . "', weight = '" . (float)$product_option_value['weight'] . "', weight_prefix = '" . $this->db->escape($product_option_value['weight_prefix']) . "', option_image = '". $this->db->escape($product_option_value['option_image']) ."'");
+				]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[ 
+				$this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET product_option_value_id = '" . (int)$product_option_value['product_option_value_id'] . "', product_option_id = '" . (int)$product_option_id . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', option_value_id = '" . (int)$product_option_value['option_value_id'] . "', sku = '" . $this->db->escape($product_option_value['sku']) . "', quantity = '" . (int)$product_option_value['quantity'] . "', subtract = '" . (int)$product_option_value['subtract'] . "', price = '" . (float)$product_option_value['price'] . "', price_prefix = '" . $this->db->escape($product_option_value['price_prefix']) . "', points = '" . (int)$product_option_value['points'] . "', points_prefix = '" . $this->db->escape($product_option_value['points_prefix']) . "', weight = '" . (float)$product_option_value['weight'] . "', weight_prefix = '" . $this->db->escape($product_option_value['weight_prefix']) . "'");
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				$this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET product_option_value_id = '" . (int)$product_option_value['product_option_value_id'] . "', product_option_id = '" . (int)$product_option_id . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', option_value_id = '" . (int)$product_option_value['option_value_id'] . "', sku = '" . $this->db->escape($product_option_value['sku']) . "', quantity = '" . (int)$product_option_value['quantity'] . "', subtract = '" . (int)$product_option_value['subtract'] . "', price = '" . (float)$product_option_value['price'] . "', price_prefix = '" . $this->db->escape($product_option_value['price_prefix']) . "', points = '" . (int)$product_option_value['points'] . "', points_prefix = '" . $this->db->escape($product_option_value['points_prefix']) . "', weight = '" . (float)$product_option_value['weight'] . "', weight_prefix = '" . $this->db->escape($product_option_value['weight_prefix']) . "', option_image = '". $this->db->escape($product_option_value['option_image']) ."'");
+				]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[ 
+				'weight_prefix'           => $product_option_value['weight_prefix']
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				'weight_prefix'           => $product_option_value['weight_prefix'],
+					'option_image'			  => $product_option_value['option_image']
+				]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[ 
+				$query = $this->db->query("SELECT pov.option_value_id, ovd.name, pov.sku, pov.quantity, pov.subtract, pov.price, pov.price_prefix, pov.points, pov.points_prefix, pov.weight, pov.weight_prefix FROM " . DB_PREFIX . "product_option_value pov LEFT JOIN " . DB_PREFIX . "option_value ov ON (pov.option_value_id = ov.option_value_id) LEFT JOIN " . DB_PREFIX . "option_value_description ovd ON (ov.option_value_id = ovd.option_value_id) WHERE pov.product_id = '" . (int)$product_id . "' AND pov.product_option_value_id = '" . (int)$product_option_value_id . "' AND ovd.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				$query = $this->db->query("SELECT pov.option_value_id, ovd.name, pov.sku, pov.quantity, pov.subtract, pov.price, pov.price_prefix, pov.points, pov.points_prefix, pov.weight, pov.weight_prefix, pov.option_image FROM " . DB_PREFIX . "product_option_value pov LEFT JOIN " . DB_PREFIX . "option_value ov ON (pov.option_value_id = ov.option_value_id) LEFT JOIN " . DB_PREFIX . "option_value_description ovd ON (ov.option_value_id = ovd.option_value_id) WHERE pov.product_id = '" . (int)$product_id . "' AND pov.product_option_value_id = '" . (int)$product_option_value_id . "' AND ovd.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path='catalog/controller/product/product.php'>
+		<operation>
+			<search>
+				<![CDATA[ 
+				'price_prefix'            => $option_value['price_prefix']
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				'price_prefix'            => $option_value['price_prefix'],
+							'product_option_image'			  => $this->model_tool_image->resize($option_value['option_image'], 500, 500)
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path='catalog/model/catalog/product.php'>
+		<operation>
+			<search>
+				<![CDATA[ 
+				'weight_prefix'           => $product_option_value['weight_prefix']
+				]]>
+			</search>
+			<add position='replace'>
+				<![CDATA[ 
+				'weight_prefix'           => $product_option_value['weight_prefix'],
+					'option_image'			=>$product_option_value['option_image']
+				]]>
+			</add>
+		</operation>
+	</file>
+	<file path='catalog/view/theme/*/template/common/header.twig'>
+		<operation>
+			<search>
+				<![CDATA[</head>]]>
+			</search>
+			<add position='before'>
+				<![CDATA[ 
+				<script src="catalog/view/javascript/option_image.js" type="text/javascript"></script>
+				]]>
+			</add>
+		</operation>
+	</file>
+
+</modification>
